@@ -1,0 +1,41 @@
+.lander {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  background-image: url("../pexels-823sl-371049.jpg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  overflow-x: hidden;
+}
+
+.rawtext {
+  display: flex;
+  flex-direction: column;
+  font-family: "Sprintura Demo", sans-serif;
+  color: #ffffff;
+  font-size: larger;
+  display: flex;
+  text-align: right;
+}
+.intro {
+  font-size: larger;
+  margin: 150px;
+  display: flex;
+  flex-direction: column;
+}
+.intro a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.intro a:visited {
+  color: var(--accent);
+}
+.intro a:hover {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}

@@ -1,0 +1,8 @@
+export { Home } from "./home";
+export { Shop } from "./shop";
+export { ProductPage } from "./product";
+export { CartPage } from "./cart";
+export { CheckoutPage } from "./checkout";
+export { AboutPage } from "./about";
+export { ContactPage } from "./contact";
+export { LoginPage } from "./login";

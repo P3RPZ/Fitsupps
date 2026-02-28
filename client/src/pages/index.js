@@ -6,3 +6,6 @@ export { CheckoutPage } from "./checkout";
 export { AboutPage } from "./about";
 export { ContactPage } from "./contact";
 export { LoginPage } from "./login";
+export { RegisterPage } from "./register";
+export { OrdersPage } from "./orders";
+export { AdminDashboard, AdminProducts, AdminOrders, AdminUsers } from "./admin";

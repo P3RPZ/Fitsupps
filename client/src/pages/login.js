@@ -1,122 +1,57 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export function LoginPage() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: ""
-  });
-  const [errors, setErrors] = useState({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const { login } = useAuth();
+  const navigate = useNavigate();
 
-  // Regex patterns for validation
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    // Email validation
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (!passwordRegex.test(formData.password)) {
-      newErrors.password = "Password must be at least 8 characters with uppercase, lowercase, and number";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ""
-      }));
-    }
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (validateForm()) {
-      // Login user using auth context
-      login(formData.email);
-      alert("Login successful! Welcome back.");
-      setIsSubmitted(true);
-      setFormData({ email: "", password: "" });
+    setError("");
+    try {
+      await login(email, password);
+      navigate("/shop");
+    } catch (err) {
+      setError(err.message);
     }
   };
-
-  if (isSubmitted) {
-    return (
-      <main className="login-page">
-        <div className="login-container">
-          <h1>Welcome Back!</h1>
-          <p>You have successfully logged in.</p>
-          <Link to="/shop" className="btn-primary">Continue Shopping</Link>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="login-page">
       <div className="login-container">
         <h1>Login</h1>
         <form onSubmit={handleSubmit} className="login-form">
+          {error && <div className="error-message">{error}</div>}
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label>Email</label>
             <input
               type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className={errors.email ? "error" : ""}
-              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
-            {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
-
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label>Password</label>
             <input
               type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              className={errors.password ? "error" : ""}
-              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
-            {errors.password && <span className="error-message">{errors.password}</span>}
           </div>
-
           <button type="submit" className="btn-primary">
             Login
           </button>
         </form>
-
         <div className="login-footer">
-          <p>Don't have an account? <Link to="/register">Sign up</Link></p>
-          <p><Link to="/forgot-password">Forgot your password?</Link></p>
+          <p>
+            Don't have an account? <Link to="/register">Sign up</Link>
+          </p>
         </div>
       </div>
     </main>

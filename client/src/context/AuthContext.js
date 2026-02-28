@@ -1,45 +1,69 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import {
+  login as apiLogin,
+  register as apiRegister,
+  getCurrentUser,
+} from "../api";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const login = (email) => {
-    setIsLoggedIn(true);
-    setUser({ email });
+  // Verify token on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
 
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("userEmail", email);
-  };
-
-  const logout = () => {
-    setIsLoggedIn(false);
-    setUser(null);
-
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userEmail");
-  };
-
-  React.useEffect(() => {
-    const storedLoginState = localStorage.getItem("isLoggedIn");
-    const storedEmail = localStorage.getItem("userEmail");
-
-    if (storedLoginState === "true" && storedEmail) {
-      setIsLoggedIn(true);
-      setUser({ email: storedEmail });
+    if (token && storedUser) {
+      // Verify token is still valid by calling backend
+      getCurrentUser()
+        .then((userData) => {
+          setUser(userData);
+          setIsLoggedIn(true);
+          setIsAdmin(userData.isAdmin || false);
+        })
+        .catch(() => {
+          // Token invalid, clear storage
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+        });
     }
   }, []);
 
-  const value = {
-    isLoggedIn,
-    user,
-    login,
-    logout,
+  const login = async (email, password) => {
+    const data = await apiLogin(email, password);
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    setUser(data.user);
+    setIsLoggedIn(true);
+    setIsAdmin(data.user.isAdmin || false);
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  const register = async (name, email, password) => {
+    const data = await apiRegister(name, email, password);
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    setUser(data.user);
+    setIsLoggedIn(true);
+    setIsAdmin(data.user.isAdmin || false);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setIsLoggedIn(false);
+    setIsAdmin(false);
+  };
+
+  return (
+    <AuthContext.Provider value={{ isLoggedIn, user, isAdmin, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

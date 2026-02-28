@@ -1,18 +1,53 @@
-import React from "react";
-import { useParams } from "react-router-dom";
-import { getProductById } from "../data/products";
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { getProductById } from "../api";
 import { useCart } from "../context/CartContext";
 
 export function ProductPage() {
   const { id } = useParams();
-  const product = getProductById(id);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const { addItem } = useCart();
 
-  if (!product) {
+  useEffect(() => {
+    setLoading(true);
+    setError("");
+    getProductById(id)
+      .then((data) => {
+        setProduct(data);
+      })
+      .catch((err) => {
+        console.error("Error loading product:", err);
+        setError(err.message || "Failed to load product");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [id]);
+
+  if (loading) {
     return (
       <main>
-        <h1>Product Not Found</h1>
-        <p>We couldn't find what you're looking for.</p>
+        <div style={{ textAlign: "center", padding: "3rem" }}>
+          <h1>Loading product...</h1>
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <main>
+        <div style={{ textAlign: "center", padding: "3rem" }}>
+          <h1>Product Not Found</h1>
+          <p style={{ color: "var(--muted)", marginBottom: "1rem" }}>
+            {error || "The product you're looking for doesn't exist."}
+          </p>
+          <Link to="/shop" style={{ color: "var(--accent)", textDecoration: "none" }}>
+            ← Back to Shop
+          </Link>
+        </div>
       </main>
     );
   }
